@@ -2,7 +2,7 @@
 
 A collection of Python scripts and utilities 
 
-## Features (More to come!)
+## Features (more to come!)
 - **Markdown to PDF Conversion**: A function to convert Markdown files into formatted PDF documents.
 
 ## Installation
