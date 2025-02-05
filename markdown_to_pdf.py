@@ -60,7 +60,3 @@ def render_markdown_to_pdf(markdown_file, pdf_file):
     print("PDF file has been generated successfully")
 
 
-
-markdown_file = "sample.txt"
-pdf_file = "output.pdf"
-render_markdown_to_pdf(markdown_file, pdf_file)
