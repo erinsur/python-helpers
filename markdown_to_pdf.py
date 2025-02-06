@@ -6,6 +6,11 @@ from reportlab.pdfgen import canvas
 """
 
 Functions:
+
+    process_line(line):
+        Function that processes a line of text from a Markdown file and returns the processed line and the vertical offset.
+        The function is used to convert Markdown text into a format that can be used by the ReportLab library.
+
     render_markdown_to_pdf(markdown_file, pdf_file):
         Python script that converts a Markdown text file into a PDF document using the ReportLab library.
         The generated PDF is saved.
@@ -38,10 +43,8 @@ def render_markdown_to_pdf(markdown_file, pdf_file):
         text = file.readlines()
     
     pdf = canvas.Canvas(pdf_file, pagesize=letter)
-    
     y_position = 750
     indent = 100
-
 
     for line in text:
         result, y_offset = process_line(line)
