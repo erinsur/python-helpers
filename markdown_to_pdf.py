@@ -26,18 +26,25 @@ def process_line(line):
     if heading_level > 0:
         line = line.lstrip("#").strip()
         font_size = max(20 - (heading_level * 2), 12)
-        return ("Helvetica-Bold", font_size, line), -20
+        return [("Helvetica-Bold", font_size, line)], -20
     elif line.startswith("- "):
-        return("Helvetica", 12, "• " + line[2:]), -20
-    elif "**" in line:
-        line = re.sub(r"\*\*(.*?)\*\*", r"\1", line)
-        return("Helvetica-Bold", 12, line), -20
-    elif "*" in line:
-        line = re.sub(r"\*(.*?)\*", r"\1", line)
-        return("Helvetica-Oblique", 12, line), -20
-    else:
-        return("Helvetica", 12, line), -20
+        return[("Helvetica", 12, "• " + line[2:])], -20
+
+    # Check for bold and italic text by spliting the line
+    segments = re.findall(r"(\*\*.*?\*\*|\*.*?\*|[^*]+)", line)
+    formatted_segments = []
+
+    for segment in segments: 
+        if segment.startswith("**") and segment.endswith("**"):
+            formatted_segments.append(("Helvetica-Bold", 12, segment[2:-2]))
+        elif segment.startswith("*") and segment.endswith("*"):
+            formatted_segments.append(("Helvetica-Oblique", 12, segment[1:-1]))
+        else:
+            formatted_segments.append(("Helvetica", 12, segment))
     
+    return formatted_segments, -20
+    
+
 
 def render_markdown_to_pdf(markdown_file, pdf_file):
     with open(markdown_file, "r") as file:
@@ -52,11 +59,15 @@ def render_markdown_to_pdf(markdown_file, pdf_file):
         if result is None:
             y_position = y_position + y_offset
             continue
-        font, size, processed_line = result
-        pdf.setFont(font, size)
-        pdf.drawString(indent, y_position, processed_line)
-        y_position = y_position + y_offset
+        
+        if isinstance(result, list):
+            x_position = indent
+            for font, size, segment in result:
+                pdf.setFont(font, size)
+                pdf.drawString(x_position, y_position, segment)
+                x_position += pdf.stringWidth(segment, font, size) + 5
 
+        y_position = y_position + y_offset
         # Check if we need to create a new page
         if y_position < 50:
             pdf.showPage()
