@@ -1,3 +1,7 @@
+import markdown
+import re
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 """
 
@@ -7,11 +11,27 @@ Functions:
         The generated PDF is saved.
 
 """
-
-import markdown
-import re
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+def process_line(line):
+    line = line.strip()
+    if not line:
+        return None, -10
+    
+    heading_level = line.count("#") if line.startswith("#") else 0
+    if heading_level > 0:
+        line = line.lstrip("#").strip()
+        font_size = max(20 - (heading_level * 2), 12)
+        return ("Helvetica-Bold", font_size, line), -20
+    elif line.startswith("- "):
+        return("Helvetica", 12, "• " + line[2:]), -20
+    elif "**" in line:
+        line = re.sub(r"\*\*(.*?)\*\*", r"\1", line)
+        return("Helvetica-Bold", 12, line), -20
+    elif "*" in line:
+        line = re.sub(r"\*(.*?)\*", r"\1", line)
+        return("Helvetica-Oblique", 12, line), -20
+    else:
+        return("Helvetica", 12, line), -20
+    
 
 def render_markdown_to_pdf(markdown_file, pdf_file):
     with open(markdown_file, "r") as file:
@@ -24,31 +44,14 @@ def render_markdown_to_pdf(markdown_file, pdf_file):
 
 
     for line in text:
-        line = line.strip()
-        
-        if not line:
-            y_position -= 10
+        result, y_offset = process_line(line)
+        if result is None:
+            y_position = y_position + y_offset
             continue
-        
-        heading_level = line.count("#") if line.startswith("#") else 0
-        if heading_level > 0:
-            line = line.lstrip("#").strip()
-            font_size = max(20 - (heading_level * 2), 12)
-            pdf.setFont("Helvetica-Bold", font_size)
-        elif line.startswith("- "):
-            pdf.setFont("Helvetica", 12)
-            line = "• " + line[2:]
-        elif "**" in line:
-            line = re.sub(r"\*\*(.*?)\*\*", r"\1", line)
-            pdf.setFont("Helvetica-Bold", 12)
-        elif "*" in line:
-            line = re.sub(r"\*(.*?)\*", r"\1", line)
-            pdf.setFont("Helvetica-Oblique", 12)
-        else:
-            pdf.setFont("Helvetica", 12)
-
-        pdf.drawString(indent, y_position, line)
-        y_position -= 20
+        font, size, processed_line = result
+        pdf.setFont(font, size)
+        pdf.drawString(indent, y_position, processed_line)
+        y_position = y_position + y_offset
 
         # Check if we need to create a new page
         if y_position < 50:
@@ -59,4 +62,5 @@ def render_markdown_to_pdf(markdown_file, pdf_file):
     pdf.save()
     print("PDF file has been generated successfully")
 
+render_markdown_to_pdf("sample.txt", "output.pdf")
 
