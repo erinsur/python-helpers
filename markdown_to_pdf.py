@@ -1,4 +1,3 @@
-import markdown
 import re
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -28,7 +27,7 @@ def process_line(line):
         font_size = max(20 - (heading_level * 2), 12)
         return [("Helvetica-Bold", font_size, line)], -20
     elif line.startswith("- "):
-        return[("Helvetica", 12, "• " + line[2:])], -20
+        return[("Helvetica", 12, "     • " + line[2:])], -20
 
     # Check for bold and italic text by spliting the line
     segments = re.findall(r"(\*\*.*?\*\*|\*.*?\*|[^*]+)", line)
@@ -78,4 +77,3 @@ def render_markdown_to_pdf(markdown_file, pdf_file):
     print("PDF file has been generated successfully")
 
 render_markdown_to_pdf("sample.txt", "output.pdf")
-
